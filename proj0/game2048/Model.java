@@ -145,30 +145,35 @@ public class Model extends Observable {
         // changed local variable to true.
         board.setViewingPerspective(side);
 
-        for (int c = 0; c < size(); c += 1) {
-            int[] arr = new int[4];
-            if (board.tile(c, size() - 1) != null) {
-                arr[size() - 1] = board.tile(c, size() - 1).value();
-            }
-            int cnt = 0;
-            for (int r = size() - 2; r >= 0; r -= 1) {
+        for (int c = 0; c < size(); c++) {
+            int pt;
+            int limit = size();
+            for (int r = size() - 2; r >= 0; r--) {
                 if (board.tile(c, r) != null) {
-                    Tile t = tile(c, r);
-                    arr[r] = t.value();
-                    int targetRow = getTargetRow(arr, r, t.value(), cnt);
-
-                    if (board.tile(c, targetRow) != null && targetRow != r) {
-                        score += 2 * t.value();
-                        cnt++;
+                    int currentValue = board.tile(c, r).value();
+                    for (pt = r + 1; pt < limit; pt++) {
+                        if (board.tile(c, pt) != null) {
+                            if (currentValue != board.tile(c, pt).value()) {
+                                board.move(c, pt - 1, board.tile(c, r));
+                                changed = true;
+                                break;
+                            } else {
+                                board.move(c, pt, board.tile(c, r));
+                                changed = true;
+                                score += 2 * currentValue;
+                                limit = pt;
+                                break;
+                            }
+                        } else if (pt == limit - 1) {
+                            board.move(c, pt, board.tile(c, r));
+                            changed = true;
+                        }
                     }
 
-                    board.move(c, targetRow, t);
-                    updateArr(arr, c);
-                    changed = true;
                 }
-
             }
         }
+
 
         board.setViewingPerspective(Side.NORTH);
         checkGameOver();
@@ -176,30 +181,6 @@ public class Model extends Observable {
             setChanged();
         }
         return changed;
-    }
-
-    private void updateArr(int[] arr, int c) {
-        for (int r = size() - 1; r >= 0; r--) {
-            if (board.tile(c, r) != null) {
-                arr[r] = board.tile(c, r).value();
-            } else {
-                arr[r] = 0;
-            }
-        }
-    }
-
-
-    private int getTargetRow(int[] arr, int row, int currentValue, int cnt) {
-        int res = 0;
-
-        for (res = row; res < size() - 1 - cnt; res++) {
-            if (currentValue != arr[res + 1] && arr[res + 1] != 0) {
-                return res;
-            } else if (currentValue == arr[res + 1]) {
-                return res + 1;
-            }
-        }
-        return res;
     }
 
     /**

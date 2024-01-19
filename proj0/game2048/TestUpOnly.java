@@ -89,15 +89,15 @@ public class TestUpOnly extends TestUtils {
      * merge with the newly created 4 tile on top.*/
     public void testUpTrickyMerge() {
         int[][] before = new int[][] {
+                {0, 0, 8, 0},
                 {0, 0, 2, 0},
                 {0, 0, 2, 0},
-                {0, 0, 0, 0},
                 {0, 0, 4, 0},
         };
         int[][] after = new int[][] {
+                {0, 0, 8, 0},
                 {0, 0, 4, 0},
                 {0, 0, 4, 0},
-                {0, 0, 0, 0},
                 {0, 0, 0, 0},
         };
 
