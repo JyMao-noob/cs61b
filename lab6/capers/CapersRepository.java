@@ -21,7 +21,7 @@ public class CapersRepository {
     static final File CWD = new File(System.getProperty("user.dir"));
 
     /** Main metadata folder. */
-    static final File CAPERS_FOLDER = Utils.join(CWD,"lab6",".capers");
+    static final File CAPERS_FOLDER = Utils.join(CWD,".capers");
                                             // TODO Hint: look at the `join`
                                             //      function in Utils
 
@@ -35,6 +35,7 @@ public class CapersRepository {
      *    - story -- file containing the current story
      */
     public static void setupPersistence(){
+        // System.out.println(System.getProperty("user.dir"));
         if(!CAPERS_FOLDER.exists()){
             CAPERS_FOLDER.mkdirs();
         }
@@ -61,8 +62,7 @@ public class CapersRepository {
         File f = Utils.join(CAPERS_FOLDER,"story");
         String savedContents = Utils.readContentsAsString(f);
         StringBuilder sb = new StringBuilder(savedContents);
-        sb.append("\n");
-        sb.append(text);
+        sb.append(text).append("\n");
         String newContent = sb.toString();
         System.out.println(newContent);
         Utils.writeContents(f,newContent);
