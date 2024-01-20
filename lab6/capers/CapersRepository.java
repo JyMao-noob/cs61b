@@ -63,7 +63,9 @@ public class CapersRepository {
         StringBuilder sb = new StringBuilder(savedContents);
         sb.append("\n");
         sb.append(text);
-        Utils.writeContents(f,sb.toString());
+        String newContent = sb.toString();
+        System.out.println(newContent);
+        Utils.writeContents(f,newContent);
     }
 
     /**
