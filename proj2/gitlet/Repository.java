@@ -327,7 +327,8 @@ public class Repository {
      * ---------------------- functions below are designed to help core commands ----------------------
      */
     private static Commit getMergedCommit(Commit splitCommit,Commit currentCommit,Commit mergeCommit,String message){
-
+        addStage = getAddStage();
+        removeStage = getRemoveStage();
         List<String> overwriteFiles = getOverWriteFiles(splitCommit,currentCommit,mergeCommit);
         List<String> writeFiles = getWriteFiles(splitCommit,currentCommit,mergeCommit);
         List<String> deleteFiles = getDeleteFiles(splitCommit,currentCommit,mergeCommit);
@@ -336,7 +337,7 @@ public class Repository {
         writeFiles(writeFiles,mergeCommit);
         deleteFiles(deleteFiles);
 
-        dealConflict(splitCommit,currentCommit,mergeCommit);
+        dealWithConflict(splitCommit,currentCommit,mergeCommit);
 
 
         TreeMap<String,String> currentBlobMaps = currentCommit.getBlobMap();
@@ -355,11 +356,21 @@ public class Repository {
                 currentBlobMaps.remove(fileName);
             }
         }
+        if(!removeStage.isEmpty()){
+            for(String fileName:removeStage.getBlobNames()){
+                currentBlobMaps.remove(fileName);
+            }
+        }
+        if(!addStage.isEmpty()){
+            for(String fileName:addStage.getBlobMap().keySet()){
+                currentBlobMaps.put(fileName,addStage.getBlobMap().get(fileName));
+            }
+        }
         return new Commit(currentCommit.getId(),mergeCommit.getId(),currentBlobMaps,message);
 
     }
 
-    private static void dealConflict(Commit splitCommit, Commit currentCommit, Commit mergeCommit) {
+    private static void dealWithConflict(Commit splitCommit, Commit currentCommit, Commit mergeCommit) {
         List<String> files = getAllFiles(splitCommit,currentCommit,mergeCommit);
         TreeMap<String,String> splitMap = splitCommit.getBlobMap();
         TreeMap<String,String> currentMap = currentCommit.getBlobMap();
@@ -388,6 +399,7 @@ public class Repository {
                 if(currentMap.containsKey(fileName)){
                     Blob blob = currentCommit.getBlobByName(fileName);
                     currentContent = new String(blob.getContent(), StandardCharsets.UTF_8);
+                    removeStage.add(blob);
                 }
                 String mergeContent = "";
                 if(mergeMap.containsKey(fileName)){
@@ -395,7 +407,9 @@ public class Repository {
                     mergeContent = new String(blob.getContent(),StandardCharsets.UTF_8);
                 }
                 String content = "<<<<<<< HEAD\n" + currentContent + "=======\n" + mergeContent + ">>>>>>>\n";
-                Utils.writeContents(Utils.join(CWD,fileName),content);
+                File file = Utils.join(CWD,fileName);
+                Utils.writeContents(file,content);
+                addStage.add(new Blob(file));
             }
         }
         if(conflict==true){
